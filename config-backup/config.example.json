@@ -1,0 +1,81 @@
+{
+  "WebhookUrl": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+  "UrgentMention": "@here",
+  "NotifyStart": true,
+  "NotifySuccess": true,
+  "BackupFolder": "X:\\Backups\\ServerConfig",
+  "KeepCount": 3,
+  "MinFreeGB": 10,
+  "ShrinkAlertPercent": 50,
+  "LogMaxBytes": 1048576,
+  "DockerExe": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+
+  "Include": {
+    "Sonarr": true,
+    "Radarr": true,
+    "Prowlarr": true,
+    "Tautulli": true,
+    "Plex": true,
+    "ContainerVolumes": true,
+    "Files": true,
+    "Homebridge": true
+  },
+
+  "Sonarr": {
+    "Url": "http://localhost:8989",
+    "ApiVersion": "v3",
+    "ConfigXml": "C:\\ProgramData\\Sonarr\\config.xml",
+    "BackupDir": "C:\\ProgramData\\Sonarr\\Backups",
+    "TimeoutSec": 900
+  },
+  "Radarr": {
+    "Url": "http://localhost:7878",
+    "ApiVersion": "v3",
+    "ConfigXml": "C:\\ProgramData\\Radarr\\config.xml",
+    "BackupDir": "C:\\ProgramData\\Radarr\\Backups",
+    "TimeoutSec": 900
+  },
+  "Prowlarr": {
+    "Url": "http://localhost:9696",
+    "ApiVersion": "v1",
+    "ConfigXml": "C:\\Users\\<user>\\Desktop\\Prowlarr\\config\\config.xml",
+    "BackupDir": "C:\\Users\\<user>\\Desktop\\Prowlarr\\config\\Backups",
+    "TimeoutSec": 600
+  },
+  "Tautulli": {
+    "Url": "http://localhost:8181",
+    "DataDir": "C:\\Users\\<user>\\AppData\\Local\\Tautulli",
+    "TimeoutSec": 900
+  },
+  "Plex": {
+    "RegistryKey": "HKCU\\Software\\Plex, Inc.\\Plex Media Server",
+    "DatabaseDir": "C:\\Users\\<user>\\AppData\\Local\\Plex Media Server\\Plug-in Support\\Databases",
+    "SkipIfModifiedWithinMinutes": 30,
+    "MaxBackupAgeDays": 8
+  },
+
+  "ContainerVolumes": [
+    { "Container": "overseerr", "Path": "/app/config", "Note": "Seerr - volume overseerr-data" },
+    { "Container": "wizarr",    "Path": "/data",       "Note": "Wizarr - volume guest-portal_wizarr-data" }
+  ],
+
+  "FileSources": [
+    { "Name": "C-Docker",             "Path": "C:\\Docker",                                     "ExcludePaths": ["backups"],         "MaxFileMB": 10 },
+    { "Name": "Prowlarr-compose",     "Path": "C:\\Users\\<user>\\Desktop\\Prowlarr",           "ExcludePaths": ["config", "logs"],  "MaxFileMB": 10 },
+    { "Name": "Transmission-compose", "Path": "C:\\Users\\<user>\\Desktop\\Transmission docker", "ExcludePaths": [],                  "MaxFileMB": 10 },
+    { "Name": "Calendarr",            "Path": "C:\\Users\\<user>\\Desktop\\Calendarr",          "ExcludePaths": ["logs"],            "MaxFileMB": 10 },
+    { "Name": "Requestrr",            "Path": "C:\\Users\\<user>\\Docker\\requestrr",           "ExcludePaths": [],                  "MaxFileMB": 10 }
+  ],
+
+  "Homebridge": {
+    "Host": "<HOMEBRIDGE_HOST_IP>",
+    "User": "<user>",
+    "KeyFile": "C:\\Users\\<user>\\.ssh\\id_ed25519_homebridge",
+    "ParentDir": "/home/<user>/homelab/homebridge",
+    "FolderName": "homebridge",
+    "Exclude": ["node_modules", ".venv"],
+    "Retries": 3,
+    "RetryDelaySec": 15,
+    "TimeoutSec": 600
+  }
+}

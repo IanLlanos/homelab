@@ -1,0 +1,9 @@
+{
+  "TautulliUrl": "http://localhost:8181",
+  "TautulliConfigIni": "C:\\Users\\<user>\\AppData\\Local\\Tautulli\\config.ini",
+  "TransmissionRpcUrl": "http://localhost:9091/transmission/rpc",
+  "TransmissionCompose": "C:\\Users\\<user>\\Desktop\\Transmission docker\\docker-compose.yml",
+  "TurtleDownKBps": 1000,
+  "TurtleUpKBps": 100,
+  "SettleSeconds": 10
+}

@@ -1,0 +1,50 @@
+{
+  "WebhookUrl": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+  "UrgentMention": "@here",
+  "MaxWaitMinutes": 120,
+  "PlexPollSeconds": 60,
+  "HealthWaitMinutes": 15,
+  "LogMaxBytes": 1048576,
+  "DockerExe": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+  "TautulliUrl": "http://localhost:8181",
+  "TautulliConfigIni": "C:\\Users\\<user>\\AppData\\Local\\Tautulli\\config.ini",
+  "Services": [
+    "Sonarr",
+    "Radarr"
+  ],
+  "HealthChecks": [
+    {
+      "Name": "Sonarr",
+      "Url": "http://localhost:8989/ping"
+    },
+    {
+      "Name": "Radarr",
+      "Url": "http://localhost:7878/ping"
+    },
+    {
+      "Name": "Plex",
+      "Url": "http://localhost:32400/identity"
+    },
+    {
+      "Name": "Tautulli",
+      "Url": "http://localhost:8181/status"
+    },
+    {
+      "Name": "Seerr",
+      "Url": "http://localhost:5056/api/v1/status"
+    },
+    {
+      "Name": "Prowlarr",
+      "Url": "http://localhost:9696/ping"
+    },
+    {
+      "Name": "Homebridge",
+      "Tcp": "<HOMEBRIDGE_HOST_IP>:8581"
+    }
+  ],
+  "PublicWebhookUrl": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+  "PublicName": "Server Status",
+  "PublicDownText": "The server is restarting for its weekly updates. Plex and requests will be down for a little bit, usually about 15 minutes.",
+  "PublicUpText": "Updates are done and the server is back up. Plex and requests are available again.",
+  "PublicTroubleText": "The server restarted for updates but Plex is taking longer than usual to come back. It's being looked at."
+}

@@ -1,0 +1,3 @@
+Item,Kind,Action,Keep,KeepGB,Remove,RemoveGB,SonarrId
+Example Show S01E01,Episode,DELETE,D:\TV\Example Show\Season 01\Example Show - S01E01.mkv,2.1,E:\TV\Example Show\Season 01\Example Show - S01E01.mkv,1.2,42
+Example Movie (2020),Movie,DELETE,F:\MOVIES\Example Movie (2020)\Example Movie (2020).mkv,12.4,G:\MOVIES\Example Movie (2020)\Example Movie (2020).mkv,6.0,

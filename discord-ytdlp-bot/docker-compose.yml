@@ -1,0 +1,28 @@
+services:
+  ytdlp-bot:
+    build: .
+    container_name: discord-ytdlp-bot
+    env_file: .env
+    environment:
+      STATE_FILE: /data/state.json
+      ARCHIVE_FILE: /data/archive.txt
+      GENERAL_DOWNLOAD_DIR: /downloads/general
+      GENERAL_DOWNLOAD_HOST: 'C:\Users\<user>\Desktop\Downloads'
+      OTHER_VIDEOS_DIR: /media/x/YouTube
+      MEDIA_ROOT: /media
+      DRIVE_LETTERS: D,E,F,G,H,I,J,K,L,X
+      PLEX_URL: http://host.docker.internal:32400
+    volumes:
+      - ./bot-data:/data
+      - C:/Users/<user>/Desktop/Downloads:/downloads/general
+      - D:/:/media/d
+      - E:/:/media/e
+      - F:/:/media/f
+      - G:/:/media/g
+      - H:/:/media/h
+      - I:/:/media/i
+      - J:/:/media/j
+      - K:/:/media/k
+      - L:/:/media/l
+      - X:/:/media/x
+    restart: unless-stopped

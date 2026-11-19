@@ -1,0 +1,24 @@
+{
+  "DiscordWebhookUrl": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+  "DiscordUsername": "Drive Health",
+  "SmartctlPath": "C:\\Program Files\\smartmontools\\bin\\smartctl.exe",
+
+  "_ExcludeSerials_note": "Drives skipped entirely (no checks, no missing alert). Match by serial because letters/disk numbers can change. Example: <DRIVE_SERIAL>.",
+  "ExcludeSerials": [
+    "<DRIVE_SERIAL>"
+  ],
+
+  "_PriorityLetters_note": "Drives listed first and tagged as priority in alerts/reports.",
+  "PriorityLetters": [
+    "X:"
+  ],
+
+  "_Thresholds_note": "HddTempC: alert when an HDD reaches this temp. LowFreePct: alert when a drive's free space drops below this percent. NvmeWearPct: alert when an NVMe drive's 'percentage used' (rated life used) reaches this.",
+  "Thresholds": {
+    "HddTempC": 55,
+    "LowFreePct": 5,
+    "NvmeWearPct": 80
+  },
+
+  "MaxLogBytes": 1048576
+}
