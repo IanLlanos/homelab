@@ -101,6 +101,14 @@ def make_get(image_base="http://127.0.0.1:8799/img", fail=()):
                           "temperature_2m_min": [44.3, 47.9, 41.0, 39.5],
                           "precipitation_probability_max": [10, 70, 20, 0],
                           "sunrise": [d + "T06:58" for d in days], "sunset": [d + "T17:23" for d in days]},
+                "hourly": {
+                    "time": [f"{d}T{h:02d}:00" for d in days[:2] for h in range(24)],
+                    "temperature_2m": [44 + 20 * max(0, 1 - abs(h - 15) / 9) for _ in days[:2] for h in range(24)],
+                    "apparent_temperature": [41 + 20 * max(0, 1 - abs(h - 15) / 9) for _ in days[:2] for h in range(24)],
+                    "precipitation_probability": [min(80, max(0, (h - 14) * 12)) for _ in days[:2] for h in range(24)],
+                    "weather_code": [(0 if h < 10 else 2 if h < 16 else 61) for _ in days[:2] for h in range(24)],
+                    "wind_speed_10m": [6 + h % 7 for _ in days[:2] for h in range(24)],
+                },
             }))
         if host == "api.weather.gov":
             if "/points/" in url:

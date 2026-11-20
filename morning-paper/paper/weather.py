@@ -20,6 +20,7 @@ def _open_meteo(lat, lon, ua):
             "latitude": lat, "longitude": lon,
             "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m",
             "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset",
+            "hourly": "temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m",
             "temperature_unit": "fahrenheit", "wind_speed_unit": "mph",
             "timezone": "auto", "forecast_days": 4,
         },
@@ -50,6 +51,37 @@ def _nws(lat, lon, ua):
     return out
 
 
+def _hm(hour):
+    return f"{hour % 12 or 12} {'AM' if hour < 12 else 'PM'}"
+
+
+def hourly(om, first_hour=6):
+    """Today's hours from 6 AM (or the current hour, if later) to 11 PM, local time."""
+    hrs = om.get("hourly") or {}
+    times = hrs.get("time") or []
+    if not times:
+        return []
+    today = om["daily"]["time"][0]
+    now = (om.get("current") or {}).get("time", "")
+    start = max(first_hour, int(now[11:13])) if now[:10] == today and len(now) >= 13 else first_hour
+    out = []
+    for i, t in enumerate(times):
+        if t[:10] != today or int(t[11:13]) < start:
+            continue
+        try:
+            out.append({
+                "hour": _hm(int(t[11:13])),
+                "temp": round(hrs["temperature_2m"][i]),
+                "feels": round(hrs["apparent_temperature"][i]),
+                "rain": hrs["precipitation_probability"][i] or 0,
+                "conditions": WMO.get(hrs["weather_code"][i], "—"),
+                "wind": round(hrs["wind_speed_10m"][i]),
+            })
+        except (KeyError, IndexError, TypeError):
+            continue
+    return out
+
+
 def report(name, lat, lon, cfg, us=True):
     ua = cfg["user_agent"]
     box = {"name": name, "ok": False, "errors": []}
@@ -69,6 +101,7 @@ def report(name, lat, lon, cfg, us=True):
             "today": WMO.get(daily["weather_code"][0], "—"),
             "sunrise": daily["sunrise"][0][-5:],
             "sunset": daily["sunset"][0][-5:],
+            "hours": hourly(om),
             "days": [
                 {"date": daily["time"][i], "high": round(daily["temperature_2m_max"][i]),
                  "low": round(daily["temperature_2m_min"][i]),

@@ -126,6 +126,21 @@ class TestPieces(Base):
         self.assertEqual(news._feed_body(entry), fakes.PARAS)
         self.assertEqual(news._feed_body({"content": [{"value": "<p>Teaser only.</p>"}]}), [])
 
+    def test_hourly_weather(self):
+        om = {"daily": {"time": ["2026-11-20"]}, "current": {"time": "2026-11-20T09:45"},
+              "hourly": {"time": [f"2026-11-{d}T{h:02d}:00" for d in (20, 21) for h in range(24)],
+                         "temperature_2m": [50.4] * 48, "apparent_temperature": [47.6] * 48,
+                         "precipitation_probability": [None] * 48, "weather_code": [61] * 48,
+                         "wind_speed_10m": [8.2] * 48}}
+        hours = weather.hourly(om)
+        self.assertEqual([h["hour"] for h in hours[:2]], ["9 AM", "10 AM"])
+        self.assertEqual(hours[-1]["hour"], "11 PM")
+        self.assertEqual(len(hours), 15)
+        self.assertEqual((hours[0]["temp"], hours[0]["rain"], hours[0]["conditions"]), (50, 0, "Light rain"))
+        om["current"]["time"] = "2026-11-20T05:10"
+        self.assertEqual(weather.hourly(om)[0]["hour"], "6 AM")
+        self.assertEqual(weather.hourly({"daily": {"time": ["2026-11-20"]}}), [])
+
     def test_shorten(self):
         text = "One two three. " * 30
         self.assertLess(len(news.shorten(text, 20).split()), 21)

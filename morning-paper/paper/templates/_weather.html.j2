@@ -15,6 +15,8 @@
 {% macro detail(box) %}
 <div class="wx">
   <h3 class="wx-name">{{ box.name }}</h3>
+  <div class="wx-cols">
+  <div class="wx-main">
   {% if box.alerts %}
     {% for a in box.alerts %}<p class="wx-alert">{{ a.event }}</p>{% endfor %}
   {% endif %}
@@ -31,5 +33,18 @@
   {% endif %}
   {% if box.sunrise %}<p class="wx-sun">Sunrise {{ box.sunrise|hm12 }} · Sunset {{ box.sunset|hm12 }}</p>{% endif %}
   {% if not box.ok %}<p class="wx-text">The forecast could not be fetched this morning.</p>{% endif %}
+  </div>
+  {% if box.hours %}
+  <table class="wx-hours">
+    <caption>Hour by Hour</caption>
+    <thead><tr><th>Hour</th><th>Sky</th><th class="num">Temp</th><th class="num">Feels</th><th class="num">Rain</th><th class="num">Wind</th></tr></thead>
+    <tbody>
+    {% for h in box.hours %}
+    <tr{% if h.rain >= 50 %} class="wet"{% endif %}><th>{{ h.hour }}</th><td>{{ h.conditions }}</td><td class="num">{{ h.temp }}°</td><td class="num">{{ h.feels }}°</td><td class="num">{{ h.rain }}%</td><td class="num">{{ h.wind }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  </div>
 </div>
 {% endmacro %}

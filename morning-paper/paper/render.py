@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .settings import PACKAGE_DIR, data_dir
 
-STATIC_VERSION = "4"
+STATIC_VERSION = "5"
 
 
 def _dt(value, tz):
@@ -121,6 +121,12 @@ def write_epub(issue, cfg, path):
                 f"{box.get('rain', 0)}% chance of rain.</p>")
             if box.get("forecast"):
                 weather_html.append(f"<p>{html.escape(box['forecast'])}</p>")
+            if box.get("hours"):
+                weather_html.append("<p class='meta'>Hour by hour</p>")
+                weather_html.append("".join(
+                    f"<p>{h['hour']}: {html.escape(h['conditions'])}, {h['temp']}° "
+                    f"(feels {h['feels']}°), {h['rain']}% rain, wind {h['wind']} mph</p>"
+                    for h in box["hours"]))
     ch = epub.EpubHtml(title="The Weather", file_name="weather.xhtml", lang="en")
     ch.content = "".join(weather_html)
     ch.add_item(css)

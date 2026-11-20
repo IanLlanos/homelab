@@ -117,6 +117,19 @@ img { max-width: 100%; display: block; }
 .wx-days th, .wx-days td { border-top: 1px solid var(--hair); padding: 5px 4px; text-align: left; }
 .wx-days .num { text-align: right; font-variant-numeric: tabular-nums; }
 .wx-sun { font-size: 13px; color: var(--muted); }
+.wx { container-type: inline-size; }
+@container (min-width: 720px) {
+  .wx-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .wx-cols .wx-hours { margin-top: 0; }
+}
+.wx-hours { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.wx-hours caption { text-align: left; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; padding-bottom: 4px; border-bottom: 2px solid var(--rule); }
+.wx-hours thead th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+.wx-hours th, .wx-hours td { border-top: 1px dotted var(--hair); padding: 3px 4px; text-align: left; white-space: nowrap; }
+.wx-hours tbody th { font-weight: 400; font-variant: small-caps; }
+.wx-hours .num { text-align: right; }
+.wx-hours td:nth-child(2) { white-space: normal; }
+.wx-hours tr.wet td:nth-child(5) { font-weight: 700; }
 
 /* ---------- Footer ---------- */
 .colophon { margin-top: 34px; border-top: 4px double var(--rule); padding-top: 10px; text-align: center; font-size: 13px; color: var(--muted); }
