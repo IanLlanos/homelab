@@ -103,6 +103,7 @@ http://paper.lan {
 | `grayscale_photos` | `true` | Black-and-white photos for the old-paper look |
 | `retention_days` | `30` | How many days of issues to keep |
 | `stories` | politics 8, national 8, local 6, tech 8, long reads 3 | Stories per section |
+| `spare_stories` | `3` | Extra stories fetched per section, so ones that only have a summary (bot-protected sites like PBS, Reuters and KERA) can be swapped for readable ones |
 | `disabled_feeds` | `[]` | Outlet names to leave out, e.g. `["Hacker News"]` |
 | `extra_feeds` | `[]` | More feeds: `{"section": "tech", "name": "Example", "kind": "rss", "url": "https://..."}` |
 

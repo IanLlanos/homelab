@@ -197,6 +197,22 @@ def pick(items, section_order, limits):
     return chosen
 
 
+def prefer_readable(chosen, limits):
+    """Trim each section back to its limit, letting spare stories whose full text
+    came through stand in for ones that only have a summary. Order is kept."""
+    out = {}
+    for section, stories in chosen.items():
+        limit = limits.get(section, 6)
+        readable = [s for s in stories if s.get("paragraphs")]
+        keep_ids = {id(s) for s in readable[:limit]}
+        for s in stories:
+            if len(keep_ids) >= limit:
+                break
+            keep_ids.add(id(s))
+        out[section] = [s for s in stories if id(s) in keep_ids]
+    return out
+
+
 def _resolve_gnews(urls):
     """Turn news.google.com links into the publisher's own links."""
     if not urls:
