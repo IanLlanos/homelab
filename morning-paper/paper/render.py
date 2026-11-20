@@ -23,12 +23,12 @@ SKY_SHORT = {"Partly cloudy": "Pt. cloudy", "Mostly clear": "Mostly clr", "Thund
 
 def hourly_chart(hours):
     """A compact, script-free SVG of the day: temperature and feels-like lines on
-    one scale, chance of rain as bars in their own strip below, sky every 3 hours.
+    one scale (named by the legend above it), chance of rain as bars in their own strip below, sky every 3 hours.
     Colors come from the page's CSS, so day/night/e-ink all apply."""
     n = len(hours or [])
     if n < 2:
         return ""
-    W, L, R = 480, 30, 44
+    W, L, R = 480, 30, 12
     T0, T1 = 16, 88           # temperature panel
     B0, B1 = 104, 132         # rain strip (baseline at B1)
     span = (W - L - R) / (n - 1)
@@ -63,13 +63,6 @@ def hourly_chart(hours):
     pts = lambda vals: " ".join(f"{x[i]:.1f},{ty(v):.1f}" for i, v in enumerate(vals))
     out.append(f'<polyline class="hc-feels" points="{pts(feels)}"/>'
                f'<polyline class="hc-temp" points="{pts(temps)}"/>')
-    # Direct labels at the right end, nudged apart if they would touch.
-    yt, yf = ty(temps[-1]), ty(feels[-1])
-    if abs(yt - yf) < 11:
-        mid = (yt + yf) / 2
-        yt, yf = (mid - 5.5, mid + 5.5) if temps[-1] >= feels[-1] else (mid + 5.5, mid - 5.5)
-    out.append(f'<text class="hc-lab" x="{W - R + 5}" y="{yt + 3.5:.1f}">Temp</text>'
-               f'<text class="hc-lab muted" x="{W - R + 5}" y="{yf + 3.5:.1f}">Feels</text>')
     # The day's high and low on the temperature line.
     hi_i = max(range(n), key=lambda i: temps[i])
     lo_i = min(range(n), key=lambda i: temps[i])
