@@ -12,9 +12,9 @@
       {% for p in story.paragraphs %}<p{% if loop.first %} class="dropcap"{% endif %}>{{ p }}</p>{% endfor %}
     {% elif story.summary %}
       <p class="dropcap">{{ story.summary }}</p>
-      <p class="note">The full text could not be fetched this morning.</p>
+      <p class="note">Only the summary could be reprinted from {{ story.source }}. The full story is linked below.</p>
     {% else %}
-      <p class="note">Only the headline was available for this story.</p>
+      <p class="note">Only the headline could be reprinted from {{ story.source }}. The full story is linked below.</p>
     {% endif %}
   </div>
   <p class="thirty">— 30 —</p>
