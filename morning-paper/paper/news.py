@@ -255,6 +255,8 @@ def extract_paragraphs(doc, url):
 def _article(item, cfg):
     resp = requests.get(item["link"], headers=BROWSER_HEADERS, timeout=20)
     resp.raise_for_status()
+    if resp.status_code == 202:  # AWS WAF answers bots with a script-only challenge page
+        raise RuntimeError(f"bot check page (HTTP 202) for url: {item['link']}")
     doc = resp.text
     paras = extract_paragraphs(doc, item["link"])
     meta = trafilatura.extract_metadata(doc, default_url=item["link"])
