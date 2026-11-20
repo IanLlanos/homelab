@@ -21,10 +21,25 @@
     s = localStorage.getItem("paperStyle");
   } catch (e) {}
   if (s === "eink") { document.documentElement.className += " eink"; }
+  /* Day/night theme from the toggle, remembered on this device. */
+  var t = null;
+  try { t = localStorage.getItem("paperTheme"); } catch (e) {}
+  if (t === "dark") { document.documentElement.className += " dark"; }
 })();
+function paperToggleTheme() {
+  var root = document.documentElement;
+  var dark = root.classList.toggle("dark");
+  try { localStorage.setItem("paperTheme", dark ? "dark" : "light"); } catch (e) {}
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) { meta.setAttribute("content", dark ? "#141311" : "#f4efe3"); }
+}
 </script>
 </head>
 <body class="{% if cfg.grayscale_photos %}gray-photos{% endif %}">
+<button type="button" class="theme-toggle" onclick="paperToggleTheme()" aria-label="Switch between day and night mode" title="Day / night">
+  <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8"/></svg>
+</button>
 {% block body %}{% endblock %}
 </body>
 </html>
