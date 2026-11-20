@@ -73,6 +73,59 @@ class TestPieces(Base):
         self.assertEqual({s["source"] for s in chosen[:2]}, {"A", "B"})
         self.assertNotIn("https://x/dup", [s["link"] for s in chosen])
 
+    def test_full_text_uses_browser_headers_and_fallback(self):
+        seen = {}
+        page = "<html><body><article>" + "".join(f"<p>{p}</p>" for p in fakes.PARAS) + "</article></body></html>"
+
+        def get(url, headers=None, **kw):
+            seen["ua"] = (headers or {}).get("User-Agent", "")
+            return fakes.Resp(page, ctype="text/html")
+
+        calls = []
+        real = news.trafilatura.extract
+
+        def picky(doc, **kw):  # the strict mode throws the article away, as on PBS
+            calls.append(kw)
+            return None if kw.get("favor_precision") else real(doc, **kw)
+
+        with mock.patch.object(news.requests, "get", get), mock.patch.object(news.trafilatura, "extract", picky):
+            art = news._article({"link": "https://www.pbs.org/newshour/x"}, self.cfg)
+        self.assertIn("Chrome", seen["ua"])
+        self.assertGreaterEqual(len(art["paragraphs"]), 3)
+        self.assertTrue(calls[0].get("favor_precision"))
+        self.assertGreater(len(calls), 1)
+
+    def test_skips_paywalls_and_videos(self):
+        from datetime import timezone
+        rss = ('<?xml version="1.0"?><rss version="2.0"><channel><title>g</title>'
+               '<item><title>Story one - The New York Times</title><link>https://news.google.com/a</link>'
+               '<source url="https://nytimes.com">The New York Times</source></item>'
+               '<item><title>Story two - KERA News</title><link>https://news.google.com/b</link>'
+               '<source url="https://kera.org">KERA News</source></item>'
+               "</channel></rss>")
+        clip = ('<?xml version="1.0"?><rss version="2.0"><channel><title>p</title>'
+                '<item><title>A clip</title><link>https://www.politico.com/video/2026/11/20/x</link></item>'
+                "</channel></rss>")
+        with mock.patch.object(news.requests, "get", lambda *a, **k: fakes.Resp(rss)):
+            gn = news.fetch_feed({"name": "Google News", "kind": "gnews", "section": "local", "url": "u"},
+                                 self.cfg, datetime(2000, 1, 1, tzinfo=timezone.utc))
+        with mock.patch.object(news.requests, "get", lambda *a, **k: fakes.Resp(clip)):
+            pol = news.fetch_feed({"name": "Politico", "kind": "rss", "section": "politics", "url": "u"},
+                                  self.cfg, datetime(2000, 1, 1, tzinfo=timezone.utc))
+        self.assertEqual([i["source"] for i in gn], ["KERA News"])
+        self.assertEqual(pol, [])
+
+    def test_structured_data_and_feed_body_fallbacks(self):
+        body = " ".join(fakes.PARAS)
+        page = ('<html><head><script type="application/ld+json">'
+                + json.dumps({"@graph": [{"@type": "NewsArticle", "articleBody": body}]})
+                + "</script></head><body><div id=app></div></body></html>")
+        with mock.patch.object(news.trafilatura, "extract", lambda doc, **kw: None):
+            self.assertEqual(news.extract_paragraphs(page, "https://www.pbs.org/x"), [body])
+        entry = {"content": [{"value": "".join(f"<p>{p}</p>" for p in fakes.PARAS)}]}
+        self.assertEqual(news._feed_body(entry), fakes.PARAS)
+        self.assertEqual(news._feed_body({"content": [{"value": "<p>Teaser only.</p>"}]}), [])
+
     def test_shorten(self):
         text = "One two three. " * 30
         self.assertLess(len(news.shorten(text, 20).split()), 21)

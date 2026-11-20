@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .settings import PACKAGE_DIR, data_dir
 
-STATIC_VERSION = "2"
+STATIC_VERSION = "4"
 
 
 def _dt(value, tz):

@@ -1,5 +1,6 @@
 """Fetch feeds, pick the day's stories, and pull full article text."""
 import html
+import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +14,22 @@ TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
 IMG_RE = re.compile(r"""<img[^>]+src=["']([^"']+)["']""", re.I)
 WORD_RE = re.compile(r"[a-z0-9']+")
+# Article pages are fetched with ordinary browser headers. Several outlets (AP,
+# Politico, KERA, the Marshall Project) answer 403 to anything that looks like a bot.
+BROWSER_HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+# Hard paywalls: Google News local results from these never have readable text.
+PAYWALLED = {"The New York Times", "The Washington Post", "The Wall Street Journal",
+             "The Dallas Morning News", "Bloomberg", "Bloomberg.com", "Financial Times"}
+SKIP_LINK_RE = re.compile(r"/(video|videos|podcast|podcasts|live)/|sponsored", re.I)
+MIN_TEXT = 400  # characters; anything shorter is a teaser or a failed extraction
+PARA_SPLIT_RE = re.compile(r"</p\s*>|<br\s*/?>\s*<br\s*/?>|</h[1-6]>|</li>", re.I)
+LDJSON_RE = re.compile(r"<script[^>]+application/ld\+json[^>]*>(.*?)</script>", re.I | re.S)
+P_RE = re.compile(r"<p[\s>].*?</p\s*>", re.I | re.S)
 STOP = {"the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are", "at", "as", "by",
         "with", "from", "after", "over", "says", "say", "new", "his", "her", "its", "be", "was"}
 
@@ -20,6 +37,21 @@ STOP = {"the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are
 def clean_text(raw):
     text = html.unescape(TAG_RE.sub(" ", raw or ""))
     return WS_RE.sub(" ", text).strip()
+
+
+def html_paragraphs(raw):
+    """Split an HTML fragment into clean paragraphs."""
+    paras = [clean_text(part) for part in PARA_SPLIT_RE.split(raw or "")]
+    return [p for p in paras if len(p) > 1]
+
+
+def _feed_body(entry):
+    """Some feeds (Axios, WordPress sites) carry the whole article. Use it when they do."""
+    for content in entry.get("content") or []:
+        paras = html_paragraphs(content.get("value", ""))
+        if sum(len(p) for p in paras) >= MIN_TEXT:
+            return paras
+    return []
 
 
 def shorten(text, words=55):
@@ -77,6 +109,10 @@ def fetch_feed(feed, cfg, since):
                 title = title[: -len(outlet) - 3]
             if feed["name"] == "Google News" and outlet:
                 source = outlet
+            if outlet in PAYWALLED:
+                continue
+        if SKIP_LINK_RE.search(link):
+            continue  # videos, podcasts, live blogs and ads have no article text
         published = _published(entry)
         if published and published < since:
             continue
@@ -88,8 +124,11 @@ def fetch_feed(feed, cfg, since):
             hay = (title + " " + summary).lower()
             if not any(word in hay for word in match):
                 continue
+        body = [] if feed["kind"] == "gnews" else _feed_body(entry)
+        if body and not summary:
+            summary = " ".join(body[:3])
         items.append({
-            "section": feed["section"], "source": source, "title": title, "link": link,
+            "section": feed["section"], "source": source, "title": title, "link": link, "paragraphs": body,
             "gnews": feed["kind"] == "gnews", "summary": shorten(summary),
             "published": published.isoformat() if published else None,
             "image": None if feed["kind"] == "gnews" else _image(entry),
@@ -180,14 +219,47 @@ def _resolve_gnews(urls):
     return out
 
 
+def extract_paragraphs(doc, url):
+    """Strict extraction first; if that throws the article away (PBS pages do),
+    retry in the default and then the lenient mode."""
+    for mode in ({"favor_precision": True}, {}, {"favor_recall": True}):
+        text = trafilatura.extract(doc, include_comments=False, include_tables=False, url=url, **mode)
+        if text and len(text) >= MIN_TEXT:
+            return [p.strip() for p in text.split("\n") if len(p.strip()) > 1]
+    # Many news sites put the whole story in their structured data.
+    for block in LDJSON_RE.findall(doc):
+        try:
+            data = json.loads(block.strip())
+        except ValueError:
+            continue
+        stack = [data]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, list):
+                stack.extend(node)
+            elif isinstance(node, dict):
+                body = node.get("articleBody")
+                if isinstance(body, str) and len(body) >= MIN_TEXT:
+                    paras = html_paragraphs(body) if "<" in body else [
+                        p.strip() for p in re.split(r"\n+", body) if p.strip()]
+                    return paras
+                stack.extend(v for v in node.values() if isinstance(v, (dict, list)))
+    # Last resort: the page's own paragraphs, keeping only sentence-length ones.
+    paras = [clean_text(p) for p in P_RE.findall(doc)]
+    paras = [p for p in paras if len(p) >= 80]
+    if sum(len(p) for p in paras) >= MIN_TEXT * 2:
+        return paras
+    return []
+
+
 def _article(item, cfg):
-    resp = requests.get(item["link"], headers={"User-Agent": cfg["user_agent"]}, timeout=20)
+    resp = requests.get(item["link"], headers=BROWSER_HEADERS, timeout=20)
     resp.raise_for_status()
+    if resp.status_code == 202:  # AWS WAF answers bots with a script-only challenge page
+        raise RuntimeError(f"bot check page (HTTP 202) for url: {item['link']}")
     doc = resp.text
-    text = trafilatura.extract(doc, include_comments=False, include_tables=False,
-                               favor_precision=True, url=item["link"])
+    paras = extract_paragraphs(doc, item["link"])
     meta = trafilatura.extract_metadata(doc, default_url=item["link"])
-    paras = [p.strip() for p in (text or "").split("\n") if len(p.strip()) > 1]
     return {
         "paragraphs": paras,
         "author": getattr(meta, "author", None) if meta else None,
@@ -206,13 +278,19 @@ def add_full_text(chosen, cfg):
     errors = []
 
     def work(story):
+        if story.get("paragraphs"):
+            return  # the feed already carried the whole article
         if "news.google.com" in story["link"]:
+            return
+        if SKIP_LINK_RE.search(story["link"]):
             return
         try:
             art = _article(story, cfg)
         except Exception as exc:
             errors.append(f"text {story['source']}: {exc}"[:200])
             return
+        if not art["paragraphs"]:
+            errors.append(f"text {story['source']}: no article text found at {story['link']}"[:200])
         story["paragraphs"] = art["paragraphs"]
         story["author"] = art["author"]
         if not story.get("image") and art["image"] and art["image"].startswith("http"):

@@ -135,6 +135,73 @@ img { max-width: 100%; display: block; }
 .archive { list-style: none; padding: 0; font-size: 19px; }
 .archive li { border-bottom: 1px solid var(--hair); padding: 10px 0; }
 
+
+/* ---------- Old-timey flair ---------- */
+/* Aged newsprint: fine grain plus a faint yellowed vignette. */
+body {
+  background-image:
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(120, 88, 40, .10) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-attachment: fixed, scroll;
+}
+/* A touch of ink spread, like letterpress. */
+body { text-shadow: 0 0 .6px rgba(28, 26, 22, .28); }
+.name { text-shadow: 0 0 1px rgba(28, 26, 22, .35); }
+
+/* Halftone dots over photos, and a warmer, aged tone. */
+.gray-photos img { filter: grayscale(1) contrast(1.12) sepia(.28) brightness(.97); }
+.lead-photo, .feature figure, .story-photo { position: relative; }
+.lead-photo::after, .feature figure::after, .story-photo::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(20, 16, 10, .55) 32%, transparent 36%);
+  background-size: 3px 3px; mix-blend-mode: multiply; opacity: .35;
+}
+
+/* Masthead extras */
+.motto { border-bottom: none; padding-bottom: 2px; margin-bottom: 0; }
+.fleuron { font-style: normal; color: var(--ink); font-size: 1.15em; }
+.fleuron.flip { display: inline-block; transform: scaleX(-1); }
+.established {
+  text-align: center; font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--muted); padding: 4px 0 8px; margin-bottom: 18px;
+  border-bottom: 4px double var(--rule);
+  box-shadow: 0 3px 0 -2px var(--rule);
+}
+.ear { box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--hair); }
+.ear-index { align-items: baseline; gap: 4px; }
+.ear-index .leader { flex: 1; border-bottom: 1px dotted var(--muted); transform: translateY(-3px); min-width: 8px; }
+
+/* Section heads with printer's ornaments */
+.section-head .orn { font-size: .8em; letter-spacing: 0; color: var(--muted); position: relative; top: -1px; }
+
+/* Small caps on the opening line, as typesetters did. */
+.dropcap::first-line { font-variant: small-caps; letter-spacing: .04em; }
+.dropcap::first-letter { font-family: "Masthead", "Headline", Georgia, serif; font-weight: 400; font-size: 4.1em; line-height: .78; padding-right: .06em; }
+
+/* Short centered "dash" rules between items instead of full-width lines. */
+.story { border-bottom: none; }
+.story::after { content: ""; display: block; width: 36%; margin: 14px auto 0; border-top: 1px solid var(--muted); }
+.columns .story:last-child::after { display: none; }
+
+/* Lead headline: tighter, heavier, like a banner. */
+.lead-head { text-transform: none; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.more a { font-variant: small-caps; letter-spacing: .05em; }
+
+/* "— 30 —": the old telegraph sign-off for the end of a story. */
+.thirty { text-align: center; letter-spacing: .3em; font-size: 14px; color: var(--muted); margin: 26px 0 0; }
+.colophon-orn { font-size: 26px; margin: 0 0 4px; color: var(--ink); }
+.colophon p { font-style: italic; }
+
+/* Night: keep the grain but darker, drop the yellow vignette and ink glow. */
+html.dark body {
+  background-image:
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0, 0, 0, .35) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .85 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+html.dark body, html.dark .name { text-shadow: none; }
+html.dark .gray-photos img { filter: grayscale(1) contrast(1.05) sepia(.2) brightness(.8); }
+html.dark .lead-photo::after, html.dark .feature figure::after, html.dark .story-photo::after { opacity: .5; }
+
 /* ---------- iPad portrait and smaller ---------- */
 @media (max-width: 1100px) {
   .columns { column-count: 2; }
@@ -155,24 +222,28 @@ img { max-width: 100%; display: block; }
   .name { white-space: normal; }
 }
 
-/* ---------- Day / night toggle ---------- */
+/* ---------- Day / night toggle (set in the masthead strip and story nav) ---------- */
 .theme-toggle {
-  position: fixed; z-index: 10;
-  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
-  width: 40px; height: 40px; border-radius: 50%; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--paper); color: var(--ink); border: 1px solid var(--rule);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .18); cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: -6px 0 -6px 12px; padding: 6px 0 6px 12px; min-height: 32px;
+  background: none; border: 0; border-left: 1px solid var(--rule); border-radius: 0;
+  color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-.theme-toggle svg { width: 20px; height: 20px; }
+.theme-toggle:hover .label-night, .theme-toggle:hover .label-day { text-decoration: underline; text-underline-offset: 3px; }
+.theme-toggle svg { width: 13px; height: 13px; flex: none; }
 .icon-moon { fill: currentColor; }
-.icon-sun { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; display: none; }
+.icon-sun { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; display: none; }
 .icon-sun circle { fill: currentColor; stroke: none; }
-html.dark .icon-moon { display: none; }
+.label-day { display: none; }
+html.dark .icon-moon, html.dark .label-night { display: none; }
 html.dark .icon-sun { display: block; }
-/* Keep the masthead strip and story nav clear of the button. */
-.strip, .story-nav { padding-right: 52px; }
+html.dark .label-day { display: inline; }
+.strip > span, .theme-toggle { white-space: nowrap; }
+.strip-right { display: inline-flex; align-items: center; }
+@media (max-width: 900px) { .strip .edition { display: none; } .strip-right .theme-toggle { border-left: 0; margin-left: 0; padding-left: 0; } }
+@media (max-width: 600px) { .strip > span { white-space: normal; } }
+.story-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
 /* ---------- Night mode ---------- */
 html.dark {
@@ -194,6 +265,8 @@ html.eink img, html.eink figure { display: none; }
 html.eink .lead-body.has-photo, html.eink .feature.has-photo { display: block; }
 html.eink .columns { column-count: 2; }
 html.eink * { transition: none !important; animation: none !important; }
+html.eink body { background-image: none; text-shadow: none; }
+html.eink .name { text-shadow: none; }
+html.eink .dropcap::first-letter { font-family: "Headline", Georgia, serif; font-weight: 900; }
 @media (max-width: 860px) { html.eink .columns { column-count: 1; } }
 html.eink.dark { --paper: #000; --ink: #fff; --muted: #ddd; --rule: #fff; --hair: #888; --accent: #fff; }
-html.eink .theme-toggle { box-shadow: none; }

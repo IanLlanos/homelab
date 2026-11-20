@@ -7,7 +7,7 @@
   <div class="strip">
     <span>Vol. {{ issue.volume|roman }} · No. {{ issue.number }}</span>
     <span class="strip-mid">{{ issue.place_label }} · {{ issue.date|longdate }}</span>
-    <span>Morning Edition</span>
+    <span class="strip-right"><span class="edition">Late City Edition · One Cent</span>{% include "_toggle.html.j2" %}</span>
   </div>
   <div class="nameplate">
     {{ wx.ear(issue.weather[0], "left") }}
@@ -17,11 +17,12 @@
     {% else %}
       <div class="ear ear-right">
         <div class="ear-label">In Today's Paper</div>
-        {% for sec in issue.sections if sec.stories %}<div class="ear-index">{{ sec.title }} <span>{{ sec.stories|length }}</span></div>{% endfor %}
+        {% for sec in issue.sections if sec.stories %}<div class="ear-index">{{ sec.title }}<i class="leader"></i><span>{{ sec.stories|length }}</span></div>{% endfor %}
       </div>
     {% endif %}
   </div>
-  <div class="motto">“{{ cfg.motto }}”</div>
+  <div class="motto"><span class="fleuron">❧</span> “{{ cfg.motto }}” <span class="fleuron flip">❧</span></div>
+  <div class="established">Established {{ issue.date[:4]|int|roman }} · Printed Daily at {{ cfg.build_time|hm12 }} · Weather, Politics, the Nation &amp; the Sciences</div>
 </header>
 
 {% if lead %}
@@ -39,7 +40,7 @@
       {% elif lead.summary %}
         <p class="dropcap">{{ lead.summary }}</p>
       {% endif %}
-      <p class="more"><a href="/issue/{{ issue.date }}/story-{{ lead.id }}.html">Continued inside →</a></p>
+      <p class="more"><a href="/issue/{{ issue.date }}/story-{{ lead.id }}.html">Continued on Page Two ☞</a></p>
     </div>
   </div>
 </article>
@@ -47,7 +48,7 @@
 
 {% for sec in sections if sec.stories %}
 <section class="section section-{{ sec.key }}" id="{{ sec.key }}">
-  <h2 class="section-head"><span>{% if sec.key == "local" %}{{ issue.place_label if not issue.near_home else cfg.home.name }} &amp; Vicinity{% else %}{{ sec.title }}{% endif %}</span></h2>
+  <h2 class="section-head"><span><span class="orn">✦</span> {% if sec.key == "local" %}{{ issue.place_label if not issue.near_home else cfg.home.name }} &amp; Vicinity{% else %}{{ sec.title }}{% endif %} <span class="orn">✦</span></span></h2>
   {% set top = sec.stories[0] %}
   <article class="feature{% if top.image %} has-photo{% endif %}">
     {% if top.image %}<figure><img src="{{ top.image }}" alt="" loading="lazy" referrerpolicy="no-referrer"></figure>{% endif %}
@@ -70,14 +71,15 @@
 {% endfor %}
 
 <section class="section section-weather" id="weather">
-  <h2 class="section-head"><span>The Weather</span></h2>
+  <h2 class="section-head"><span><span class="orn">✦</span> The Weather Almanac <span class="orn">✦</span></span></h2>
   <div class="wx-grid">
     {% for box in issue.weather %}{{ wx.detail(box) }}{% endfor %}
   </div>
 </section>
 
 <footer class="colophon">
-  <p>Printed {{ issue.built|clock }} on the homelab press. Sources: NPR, PBS News, AP, ProPublica and others.</p>
+  <p class="colophon-orn">❦</p>
+  <p>Printed and published at {{ issue.built|clock }} by the Homelab Press, {{ cfg.home.name }}, {{ cfg.home.state }}. Dispatches by wire from NPR, PBS News, the Associated Press, ProPublica and others.</p>
   <p><a href="/archive">Past issues</a> · <a href="/issue/{{ issue.date }}/paper.epub">Download EPUB</a> · <a href="?style=eink">E-ink style</a> · <a href="?style=color">Standard style</a></p>
 </footer>
 </div>

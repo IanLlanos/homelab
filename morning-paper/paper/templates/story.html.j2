@@ -2,7 +2,7 @@
 {% block title %}{{ story.title }} · {{ cfg.paper_name }}{% endblock %}
 {% block body %}
 <div class="page story-page">
-  <nav class="story-nav"><a href="/issue/{{ issue.date }}/#{{ section.key }}">← {{ cfg.paper_name }}, {{ issue.date|longdate }}</a></nav>
+  <nav class="story-nav"><a href="/issue/{{ issue.date }}/#{{ section.key }}">← {{ cfg.paper_name }}, {{ issue.date|longdate }}</a>{% include "_toggle.html.j2" %}</nav>
   <p class="kicker">{{ section.title }}</p>
   <h1 class="story-head">{{ story.title }}</h1>
   <p class="byline">{{ story.source }}{% if story.author %} · {{ story.author }}{% endif %}{% if story.published %} · {{ story.published|when }}{% endif %}</p>
@@ -12,11 +12,12 @@
       {% for p in story.paragraphs %}<p{% if loop.first %} class="dropcap"{% endif %}>{{ p }}</p>{% endfor %}
     {% elif story.summary %}
       <p class="dropcap">{{ story.summary }}</p>
-      <p class="note">The full text could not be fetched this morning.</p>
+      <p class="note">Only the summary could be reprinted from {{ story.source }}. The full story is linked below.</p>
     {% else %}
-      <p class="note">Only the headline was available for this story.</p>
+      <p class="note">Only the headline could be reprinted from {{ story.source }}. The full story is linked below.</p>
     {% endif %}
   </div>
+  <p class="thirty">— 30 —</p>
   <p class="source-link"><a href="{{ story.link }}" rel="noopener">Read it at {{ story.source }} →</a></p>
 </div>
 {% endblock %}
