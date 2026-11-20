@@ -1,0 +1,17 @@
+{
+  "paper_name": "The Morning Ledger",
+  "motto": "All the news that fits before coffee",
+  "build_time": "06:00",
+  "token": "<LONG_RANDOM_TOKEN>",
+  "discord_webhook_url": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+  "home": {
+    "name": "Dallas",
+    "state": "Texas",
+    "lat": 32.7767,
+    "lon": -96.797
+  },
+  "grayscale_photos": true,
+  "retention_days": 30,
+  "disabled_feeds": [],
+  "extra_feeds": []
+}

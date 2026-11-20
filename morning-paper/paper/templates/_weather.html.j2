@@ -1,0 +1,35 @@
+{% macro ear(box, side) %}
+<div class="ear ear-{{ side }}">
+  <div class="ear-label">Weather · {{ box.name }}</div>
+  {% if box.ok and box.high is defined %}
+    <div class="ear-temp">{{ box.high }}°<span class="ear-low"> / {{ box.low }}°</span></div>
+    <div class="ear-cond">{{ box.today }}{% if box.rain %}, {{ box.rain }}% rain{% endif %}</div>
+  {% elif box.ok %}
+    <div class="ear-cond">{{ box.forecast|truncate(70) }}</div>
+  {% else %}
+    <div class="ear-cond">Forecast unavailable</div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro detail(box) %}
+<div class="wx">
+  <h3 class="wx-name">{{ box.name }}</h3>
+  {% if box.alerts %}
+    {% for a in box.alerts %}<p class="wx-alert">{{ a.event }}</p>{% endfor %}
+  {% endif %}
+  {% if box.ok and box.now is defined %}
+    <p class="wx-now"><span class="wx-big">{{ box.now }}°</span> {{ box.conditions }}, feels like {{ box.feels }}°. Wind {{ box.wind }} mph, humidity {{ box.humidity }}%.</p>
+  {% endif %}
+  {% if box.forecast %}<p class="wx-text">{{ box.forecast }}</p>{% endif %}
+  {% if box.days %}
+  <table class="wx-days">
+    {% for d in box.days %}
+    <tr><th>{{ d.date|weekday }}</th><td>{{ d.conditions }}</td><td class="num">{{ d.high }}° / {{ d.low }}°</td><td class="num">{{ d.rain }}%</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if box.sunrise %}<p class="wx-sun">Sunrise {{ box.sunrise|hm12 }} · Sunset {{ box.sunset|hm12 }}</p>{% endif %}
+  {% if not box.ok %}<p class="wx-text">The forecast could not be fetched this morning.</p>{% endif %}
+</div>
+{% endmacro %}

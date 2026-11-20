@@ -1,0 +1,5 @@
+tests
+README.md
+config.json
+config.example.json
+**/__pycache__

@@ -1,0 +1,22 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ story.title }} · {{ cfg.paper_name }}{% endblock %}
+{% block body %}
+<div class="page story-page">
+  <nav class="story-nav"><a href="/issue/{{ issue.date }}/#{{ section.key }}">← {{ cfg.paper_name }}, {{ issue.date|longdate }}</a></nav>
+  <p class="kicker">{{ section.title }}</p>
+  <h1 class="story-head">{{ story.title }}</h1>
+  <p class="byline">{{ story.source }}{% if story.author %} · {{ story.author }}{% endif %}{% if story.published %} · {{ story.published|when }}{% endif %}</p>
+  {% if story.image %}<figure class="story-photo"><img src="{{ story.image }}" alt="" referrerpolicy="no-referrer"></figure>{% endif %}
+  <div class="story-body">
+    {% if story.paragraphs %}
+      {% for p in story.paragraphs %}<p{% if loop.first %} class="dropcap"{% endif %}>{{ p }}</p>{% endfor %}
+    {% elif story.summary %}
+      <p class="dropcap">{{ story.summary }}</p>
+      <p class="note">The full text could not be fetched this morning.</p>
+    {% else %}
+      <p class="note">Only the headline was available for this story.</p>
+    {% endif %}
+  </div>
+  <p class="source-link"><a href="{{ story.link }}" rel="noopener">Read it at {{ story.source }} →</a></p>
+</div>
+{% endblock %}

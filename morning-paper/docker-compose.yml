@@ -1,0 +1,17 @@
+services:
+  morning-paper:
+    build: .
+    image: morning-paper:local
+    container_name: morning-paper
+    restart: unless-stopped
+    ports:
+      - "8790:8790"
+    environment:
+      TZ: America/Chicago
+    volumes:
+      - paper-data:/data
+      - ./config.json:/app/config.json:ro
+    mem_limit: 256m
+
+volumes:
+  paper-data:

@@ -1,0 +1,7 @@
+{% extends "base.html.j2" %}
+{% block body %}
+<div class="page story-page">
+  <h1 class="name" style="text-align:center">{{ cfg.paper_name }}</h1>
+  <p style="text-align:center">The first edition hasn't been printed yet. It's built every morning at {{ cfg.build_time }}; if the server just started, it's being built now. Refresh in a minute.</p>
+</div>
+{% endblock %}

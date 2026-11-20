@@ -1,0 +1,84 @@
+{% extends "base.html.j2" %}
+{% import "_weather.html.j2" as wx %}
+{% block title %}{{ cfg.paper_name }} · {{ issue.date|longdate }}{% endblock %}
+{% block body %}
+<div class="page">
+<header class="masthead">
+  <div class="strip">
+    <span>Vol. {{ issue.volume|roman }} · No. {{ issue.number }}</span>
+    <span class="strip-mid">{{ issue.place_label }} · {{ issue.date|longdate }}</span>
+    <span>Morning Edition</span>
+  </div>
+  <div class="nameplate">
+    {{ wx.ear(issue.weather[0], "left") }}
+    <h1 class="name"><a href="/">{{ cfg.paper_name }}</a></h1>
+    {% if issue.weather|length > 1 %}
+      {{ wx.ear(issue.weather[1], "right") }}
+    {% else %}
+      <div class="ear ear-right">
+        <div class="ear-label">In Today's Paper</div>
+        {% for sec in issue.sections if sec.stories %}<div class="ear-index">{{ sec.title }} <span>{{ sec.stories|length }}</span></div>{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="motto">“{{ cfg.motto }}”</div>
+</header>
+
+{% if lead %}
+<article class="lead">
+  <h2 class="lead-head"><a href="/issue/{{ issue.date }}/story-{{ lead.id }}.html">{{ lead.title }}</a></h2>
+  <div class="lead-body{% if lead.image %} has-photo{% endif %}">
+    {% if lead.image %}
+    <figure class="lead-photo"><img src="{{ lead.image }}" alt="" loading="eager" referrerpolicy="no-referrer"></figure>
+    {% endif %}
+    <div class="lead-text">
+      <p class="byline">{{ lead.source }}{% if lead.author %} · {{ lead.author }}{% endif %}{% if lead.published %} · {{ lead.published|when }}{% endif %}</p>
+      {% set paras = lead.paragraphs or [] %}
+      {% if paras %}
+        {% for p in paras[:4] %}<p{% if loop.first %} class="dropcap"{% endif %}>{{ p }}</p>{% endfor %}
+      {% elif lead.summary %}
+        <p class="dropcap">{{ lead.summary }}</p>
+      {% endif %}
+      <p class="more"><a href="/issue/{{ issue.date }}/story-{{ lead.id }}.html">Continued inside →</a></p>
+    </div>
+  </div>
+</article>
+{% endif %}
+
+{% for sec in sections if sec.stories %}
+<section class="section section-{{ sec.key }}" id="{{ sec.key }}">
+  <h2 class="section-head"><span>{% if sec.key == "local" %}{{ issue.place_label if not issue.near_home else cfg.home.name }} &amp; Vicinity{% else %}{{ sec.title }}{% endif %}</span></h2>
+  {% set top = sec.stories[0] %}
+  <article class="feature{% if top.image %} has-photo{% endif %}">
+    {% if top.image %}<figure><img src="{{ top.image }}" alt="" loading="lazy" referrerpolicy="no-referrer"></figure>{% endif %}
+    <div>
+      <h3 class="feature-head"><a href="/issue/{{ issue.date }}/story-{{ top.id }}.html">{{ top.title }}</a></h3>
+      <p class="byline">{{ top.source }}{% if top.published %} · {{ top.published|when }}{% endif %}</p>
+      {% if top.summary %}<p>{{ top.summary }}</p>{% endif %}
+    </div>
+  </article>
+  <div class="columns">
+    {% for s in sec.stories[1:] %}
+    <article class="story">
+      <h4><a href="/issue/{{ issue.date }}/story-{{ s.id }}.html">{{ s.title }}</a></h4>
+      <p class="byline">{{ s.source }}{% if s.published %} · {{ s.published|when }}{% endif %}</p>
+      {% if s.summary %}<p>{{ s.summary }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<section class="section section-weather" id="weather">
+  <h2 class="section-head"><span>The Weather</span></h2>
+  <div class="wx-grid">
+    {% for box in issue.weather %}{{ wx.detail(box) }}{% endfor %}
+  </div>
+</section>
+
+<footer class="colophon">
+  <p>Printed {{ issue.built|clock }} on the homelab press. Sources: NPR, PBS News, AP, ProPublica and others.</p>
+  <p><a href="/archive">Past issues</a> · <a href="/issue/{{ issue.date }}/paper.epub">Download EPUB</a> · <a href="?style=eink">E-ink style</a> · <a href="?style=color">Standard style</a></p>
+</footer>
+</div>
+{% endblock %}

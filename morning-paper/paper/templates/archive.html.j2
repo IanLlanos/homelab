@@ -1,0 +1,11 @@
+{% extends "base.html.j2" %}
+{% block title %}Past issues · {{ cfg.paper_name }}{% endblock %}
+{% block body %}
+<div class="page story-page">
+  <nav class="story-nav"><a href="/">← Today's paper</a></nav>
+  <h1 class="story-head">Past Issues</h1>
+  <ul class="archive">
+    {% for d in dates %}<li><a href="/issue/{{ d }}/">{{ d|longdate }}</a> · <a href="/issue/{{ d }}/paper.epub">EPUB</a></li>{% else %}<li>No issues yet.</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}
