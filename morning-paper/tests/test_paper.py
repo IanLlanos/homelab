@@ -227,6 +227,19 @@ class TestServer(Base):
                            {"Content-Type": "application/x-www-form-urlencoded"})
         self.assertEqual(code, 200)
 
+    def test_location_chunked_body(self):
+        import http.client
+        host, port = self.httpd.server_address
+        conn = http.client.HTTPConnection(host, port, timeout=5)
+        body = json.dumps({"lat": 41.88, "lon": -87.63}).encode()
+        conn.request("POST", "/api/location", body=iter([body[:10], body[10:]]), encode_chunked=True,
+                     headers={"Content-Type": "application/json", "Authorization": "Bearer secret-token",
+                              "Transfer-Encoding": "chunked"})
+        resp = conn.getresponse()
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(json.loads(resp.read())["saved"], "Chicago, Illinois")
+        conn.close()
+
 
 if __name__ == "__main__":
     unittest.main()

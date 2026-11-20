@@ -68,11 +68,29 @@ class Handler(BaseHTTPRequestHandler):
         given = given or self.headers.get("X-Paper-Token", "") or query.get("token", [""])[0]
         return hmac.compare_digest(given.encode(), token.encode())
 
+    def _read_chunked(self):
+        """Bodies relayed by a proxy (Caddy over HTTP/2) can arrive chunked,
+        without a Content-Length."""
+        raw = b""
+        while True:
+            size = int(self.rfile.readline(64).split(b";")[0].strip() or b"0", 16)
+            if size == 0:
+                while self.rfile.readline(1024).strip():  # trailers
+                    pass
+                return raw
+            raw += self.rfile.read(size)
+            self.rfile.readline(8)  # CRLF after each chunk
+            if len(raw) > MAX_BODY:
+                raise ValueError("body too large")
+
     def _body(self):
-        length = int(self.headers.get("Content-Length") or 0)
-        if length > MAX_BODY:
-            raise ValueError("body too large")
-        raw = self.rfile.read(length) if length else b""
+        if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
+            raw = self._read_chunked()
+        else:
+            length = int(self.headers.get("Content-Length") or 0)
+            if length > MAX_BODY:
+                raise ValueError("body too large")
+            raw = self.rfile.read(length) if length else b""
         ctype = self.headers.get("Content-Type", "")
         if "json" in ctype or raw.strip().startswith(b"{"):
             return json.loads(raw or b"{}")
