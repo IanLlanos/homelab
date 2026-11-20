@@ -80,10 +80,8 @@ def _build(cfg, day, force):
     feeds = all_feeds(cfg, place, near_home)
     items, feed_errors = news.gather(feeds, cfg, now.astimezone(timezone.utc))
     order = [key for key, _ in SECTIONS]
-    spare = cfg["spare_stories"] if cfg["full_text"] else 0
-    chosen = news.pick(items, order, {k: v + spare for k, v in cfg["stories"].items()})
+    chosen = news.pick(items, order, cfg["stories"])
     text_errors = news.add_full_text(chosen, cfg)
-    chosen = news.prefer_readable(chosen, cfg["stories"])
 
     total = sum(len(v) for v in chosen.values())
     if total == 0:

@@ -126,15 +126,6 @@ class TestPieces(Base):
         self.assertEqual(news._feed_body(entry), fakes.PARAS)
         self.assertEqual(news._feed_body({"content": [{"value": "<p>Teaser only.</p>"}]}), [])
 
-    def test_prefer_readable_swaps_in_spares(self):
-        mk = lambda n, ok: {"title": n, "paragraphs": ["x"] if ok else []}
-        stories = [mk("a", True), mk("b", False), mk("c", True), mk("d", True), mk("e", False)]
-        out = news.prefer_readable({"politics": stories}, {"politics": 3})
-        self.assertEqual([s["title"] for s in out["politics"]], ["a", "c", "d"])
-        short = [mk("a", False), mk("b", True)]
-        out = news.prefer_readable({"politics": short}, {"politics": 2})
-        self.assertEqual([s["title"] for s in out["politics"]], ["a", "b"])
-
     def test_shorten(self):
         text = "One two three. " * 30
         self.assertLess(len(news.shorten(text, 20).split()), 21)

@@ -31,7 +31,6 @@ DEFAULTS = {
     "stories": {"politics": 8, "national": 8, "local": 6, "tech": 8, "investigations": 3},
     # Fetch the full article text for each story (story pages + EPUB).
     "full_text": True,
-    "spare_stories": 3,
     "fetch_workers": 6,
     # Extra feeds to add, same shape as paper/sources.py entries.
     "extra_feeds": [],
