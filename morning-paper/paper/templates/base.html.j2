@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="{{ cfg.paper_name }}">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4efe3">
+<link rel="apple-touch-icon" href="/static/icon.png">
+<title>{% block title %}{{ cfg.paper_name }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/paper.css?v={{ static_version }}">
+<script>
+/* Style switch: ?style=eink or ?style=color, remembered on this device. */
+(function () {
+  var s = null;
+  try {
+    var m = location.search.match(/[?&]style=(eink|color)/);
+    if (m) { localStorage.setItem("paperStyle", m[1]); }
+    s = localStorage.getItem("paperStyle");
+  } catch (e) {}
+  if (s === "eink") { document.documentElement.className += " eink"; }
+})();
+</script>
+</head>
+<body class="{% if cfg.grayscale_photos %}gray-photos{% endif %}">
+{% block body %}{% endblock %}
+</body>
+</html>

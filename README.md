@@ -10,6 +10,7 @@ Scripts and containers that keep my Windows Plex server running hands-off.
 | [config-backup](config-backup/) | Weekly zip backup of all app configs (arr apps, Plex, Tautulli, Docker volumes, Homebridge) with Discord alerts |
 | [drive-health](drive-health/) | Weekly SMART check of every drive with Discord alerts when something gets worse |
 | [announcements](announcements/) | One-off scheduled @everyone Discord announcement with an image (Plex Wrapped) |
+| [morning-paper](morning-paper/) | Old-style personal newspaper built at 6 AM daily: news, local news by iPhone location, weather; served on the LAN for the iPad |
 | [utilities](utilities/) | Small helpers: restart Plex if it crashed, start Claude minimized, remove duplicate media copies |
 
 Every secret lives in a git-ignored `config.json` or `.env`. Copy the `*.example` file next to it and fill it in.
