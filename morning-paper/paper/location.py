@@ -34,23 +34,52 @@ def distance_km(a_lat, a_lon, b_lat, b_lon):
     return 2 * r * math.asin(math.sqrt(h))
 
 
-def reverse_geocode(lat, lon, cfg):
-    """City and state for a point, via OpenStreetMap Nominatim."""
+GEOCODER_UA = "morning-paper/1.0 (personal homelab newspaper; one lookup per location update)"
+
+
+def _nominatim(lat, lon):
     resp = requests.get(
         "https://nominatim.openstreetmap.org/reverse",
         params={"format": "jsonv2", "lat": lat, "lon": lon, "zoom": 10, "addressdetails": 1},
-        headers={"User-Agent": cfg["user_agent"], "Accept-Language": "en"},
+        headers={"User-Agent": GEOCODER_UA, "Accept-Language": "en"},
         timeout=15,
     )
     resp.raise_for_status()
     addr = resp.json().get("address", {})
     city = (addr.get("city") or addr.get("town") or addr.get("village")
             or addr.get("municipality") or addr.get("county"))
-    return {
-        "city": city,
-        "state": addr.get("state"),
-        "country_code": (addr.get("country_code") or "").upper(),
-    }
+    return {"city": city, "state": addr.get("state"),
+            "country_code": (addr.get("country_code") or "").upper()}
+
+
+def _bigdatacloud(lat, lon):
+    resp = requests.get(
+        "https://api.bigdatacloud.net/data/reverse-geocode-client",
+        params={"latitude": lat, "longitude": lon, "localityLanguage": "en"},
+        headers={"User-Agent": GEOCODER_UA},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return {"city": data.get("city") or data.get("locality"),
+            "state": data.get("principalSubdivision"),
+            "country_code": (data.get("countryCode") or "").upper()}
+
+
+def reverse_geocode(lat, lon, cfg):
+    """City and state for a point. Called only when a new location is posted
+    (about once a day), and the answer is saved, so the free services are
+    never hit on every build. Nominatim first, BigDataCloud if it refuses."""
+    errors = []
+    for lookup in (_nominatim, _bigdatacloud):
+        try:
+            place = lookup(lat, lon)
+            if place.get("city") or place.get("state"):
+                return place
+            errors.append(f"{lookup.__name__}: no city")
+        except Exception as exc:
+            errors.append(f"{lookup.__name__}: {exc}")
+    raise RuntimeError("; ".join(errors))
 
 
 def parse_coords(payload):

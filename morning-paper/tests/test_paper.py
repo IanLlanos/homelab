@@ -53,6 +53,11 @@ class TestPieces(Base):
         self.assertFalse(near)
         self.assertEqual(location.label(place), "Chicago, Illinois")
 
+    def test_geocoder_fallback(self):
+        fakes.install(MODULES, fakes.make_get(fail=("nominatim",)))
+        place = location.save(30.27, -97.74, self.cfg)
+        self.assertEqual(location.label(place), "Austin, Texas")
+
     def test_pick_round_robin_and_dedupe(self):
         words = ["harbor", "budget", "comet", "orchard", "tunnel", "glacier", "violin", "harvest", "museum", "ferry"]
         items = []

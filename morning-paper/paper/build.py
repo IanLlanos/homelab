@@ -61,6 +61,13 @@ def _build(cfg, day, force):
         return {"status": "exists", "date": day.isoformat()}
 
     place, near_home = location.current(cfg)
+    if place.get("updated") and not (place.get("city") or place.get("state")):
+        # The geocoder was down when the location arrived; try once more.
+        try:
+            location.save(place["lat"], place["lon"], cfg)
+            place, near_home = location.current(cfg)
+        except Exception:
+            log.warning("Reverse geocoding still failing")
     home = cfg["home"]
 
     # Weather: Dallas always, plus where you are when you're away.

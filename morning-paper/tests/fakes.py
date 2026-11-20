@@ -114,6 +114,8 @@ def make_get(image_base="http://127.0.0.1:8799/img", fail=()):
             lat = float((params or {}).get("lat", 0))
             city = ("Dallas", "Texas") if lat < 35 else ("Chicago", "Illinois")
             return Resp(json.dumps({"address": {"city": city[0], "state": city[1], "country_code": "us"}}))
+        if host == "api.bigdatacloud.net":
+            return Resp(json.dumps({"city": "Austin", "principalSubdivision": "Texas", "countryCode": "US"}))
         if host == "example.org":
             body = "<html><head><title>x</title></head><body><article>" + "".join(
                 f"<p>{p}</p>" for p in PARAS) + "</article></body></html>"
