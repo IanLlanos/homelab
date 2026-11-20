@@ -71,6 +71,7 @@ def hourly(om, first_hour=6):
         try:
             out.append({
                 "hour": _hm(int(t[11:13])),
+                "h24": int(t[11:13]),
                 "temp": round(hrs["temperature_2m"][i]),
                 "feels": round(hrs["apparent_temperature"][i]),
                 "rain": hrs["precipitation_probability"][i] or 0,

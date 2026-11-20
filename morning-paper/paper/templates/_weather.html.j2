@@ -35,15 +35,24 @@
   {% if not box.ok %}<p class="wx-text">The forecast could not be fetched this morning.</p>{% endif %}
   </div>
   {% if box.hours %}
-  <table class="wx-hours">
-    <caption>Hour by Hour</caption>
-    <thead><tr><th>Hour</th><th>Sky</th><th class="num">Temp</th><th class="num">Feels</th><th class="num">Rain</th><th class="num">Wind</th></tr></thead>
-    <tbody>
-    {% for h in box.hours %}
-    <tr{% if h.rain >= 50 %} class="wet"{% endif %}><th>{{ h.hour }}</th><td>{{ h.conditions }}</td><td class="num">{{ h.temp }}°</td><td class="num">{{ h.feels }}°</td><td class="num">{{ h.rain }}%</td><td class="num">{{ h.wind }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <figure class="wx-chart">
+    <figcaption>Hour by Hour
+      <span class="hc-key"><i class="k-temp"></i>Temperature <i class="k-feels"></i>Feels like <i class="k-rain"></i>Chance of rain</span>
+    </figcaption>
+    {{ box.hours|hourly_chart }}
+    <p class="wx-sum">{{ box.hours|hourly_summary }}</p>
+    <details class="wx-table">
+      <summary>Every hour as a table</summary>
+      <table class="wx-hours">
+        <thead><tr><th>Hour</th><th>Sky</th><th class="num">Temp</th><th class="num">Feels</th><th class="num">Rain</th><th class="num">Wind</th></tr></thead>
+        <tbody>
+        {% for h in box.hours %}
+        <tr{% if h.rain >= 50 %} class="wet"{% endif %}><th>{{ h.hour }}</th><td>{{ h.conditions }}</td><td class="num">{{ h.temp }}°</td><td class="num">{{ h.feels }}°</td><td class="num">{{ h.rain }}%</td><td class="num">{{ h.wind }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </figure>
   {% endif %}
   </div>
 </div>
