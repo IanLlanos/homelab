@@ -155,6 +155,39 @@ img { max-width: 100%; display: block; }
   .name { white-space: normal; }
 }
 
+/* ---------- Day / night toggle ---------- */
+.theme-toggle {
+  position: fixed; z-index: 10;
+  top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+  width: 40px; height: 40px; border-radius: 50%; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper); color: var(--ink); border: 1px solid var(--rule);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle svg { width: 20px; height: 20px; }
+.icon-moon { fill: currentColor; }
+.icon-sun { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; display: none; }
+.icon-sun circle { fill: currentColor; stroke: none; }
+html.dark .icon-moon { display: none; }
+html.dark .icon-sun { display: block; }
+/* Keep the masthead strip and story nav clear of the button. */
+.strip, .story-nav { padding-right: 52px; }
+
+/* ---------- Night mode ---------- */
+html.dark {
+  color-scheme: dark;
+  --paper: #141311;
+  --ink: #ebe5d6;
+  --muted: #a69e8f;
+  --rule: #d6cfbf;
+  --hair: #4a463e;
+  --accent: #e07a66;
+}
+html.dark img { filter: brightness(.85); }
+html.dark .gray-photos img { filter: grayscale(1) contrast(1.05) brightness(.82); }
+html.dark .lead-photo img, html.dark .feature img, html.dark .story-photo img { border-color: var(--hair); }
+
 /* ---------- E-ink style (?style=eink) ---------- */
 html.eink { --paper: #fff; --ink: #000; --muted: #222; --hair: #555; --accent: #000; --body-size: 19px; }
 html.eink img, html.eink figure { display: none; }
@@ -162,3 +195,5 @@ html.eink .lead-body.has-photo, html.eink .feature.has-photo { display: block; }
 html.eink .columns { column-count: 2; }
 html.eink * { transition: none !important; animation: none !important; }
 @media (max-width: 860px) { html.eink .columns { column-count: 1; } }
+html.eink.dark { --paper: #000; --ink: #fff; --muted: #ddd; --rule: #fff; --hair: #888; --accent: #fff; }
+html.eink .theme-toggle { box-shadow: none; }

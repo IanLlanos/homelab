@@ -15,6 +15,7 @@ One Python container (`python:3.12-slim`, about 100 MB of RAM, capped at 256 MB)
 - **Alerts:** a failed build posts to the Discord webhook in `config.json`, once at the first failure and once more an hour later. A build where 4 or more sources failed posts a warning.
 - **Sources** (`paper/sources.py`): NPR, PBS News, AP, ProPublica, Politico, The 19th, The Guardian, Axios, Reuters, The Marshall Project, Ars Technica, The Verge, Wired, 404 Media, Hacker News. Local: KERA, The Texas Tribune and Dallas Observer at home; Google News for your city when you're away. AP, Reuters and the local outlets have no usable RSS, so they come through Google News and are resolved back to the original article.
 - **Storage:** the `morning-paper_paper-data` named volume holds 30 days of issues (a few MB a day) and your last location. Photos are not downloaded; the iPad loads them from the news sites.
+- **Night mode:** the round button in the top right switches between day and night. Each device remembers its choice.
 - **Styles:** add `?style=eink` to the URL for a black-and-white, no-photo, larger-type version (remembered on that device). `?style=color` switches back.
 
 ## Install (over SSH from Chungus, PowerShell 5.1)
