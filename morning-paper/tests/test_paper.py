@@ -115,6 +115,17 @@ class TestPieces(Base):
         self.assertEqual([i["source"] for i in gn], ["KERA News"])
         self.assertEqual(pol, [])
 
+    def test_structured_data_and_feed_body_fallbacks(self):
+        body = " ".join(fakes.PARAS)
+        page = ('<html><head><script type="application/ld+json">'
+                + json.dumps({"@graph": [{"@type": "NewsArticle", "articleBody": body}]})
+                + "</script></head><body><div id=app></div></body></html>")
+        with mock.patch.object(news.trafilatura, "extract", lambda doc, **kw: None):
+            self.assertEqual(news.extract_paragraphs(page, "https://www.pbs.org/x"), [body])
+        entry = {"content": [{"value": "".join(f"<p>{p}</p>" for p in fakes.PARAS)}]}
+        self.assertEqual(news._feed_body(entry), fakes.PARAS)
+        self.assertEqual(news._feed_body({"content": [{"value": "<p>Teaser only.</p>"}]}), [])
+
     def test_shorten(self):
         text = "One two three. " * 30
         self.assertLess(len(news.shorten(text, 20).split()), 21)

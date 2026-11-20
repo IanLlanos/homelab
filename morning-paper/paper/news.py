@@ -1,5 +1,6 @@
 """Fetch feeds, pick the day's stories, and pull full article text."""
 import html
+import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -26,6 +27,9 @@ PAYWALLED = {"The New York Times", "The Washington Post", "The Wall Street Journ
              "The Dallas Morning News", "Bloomberg", "Bloomberg.com", "Financial Times"}
 SKIP_LINK_RE = re.compile(r"/(video|videos|podcast|podcasts|live)/|sponsored", re.I)
 MIN_TEXT = 400  # characters; anything shorter is a teaser or a failed extraction
+PARA_SPLIT_RE = re.compile(r"</p\s*>|<br\s*/?>\s*<br\s*/?>|</h[1-6]>|</li>", re.I)
+LDJSON_RE = re.compile(r"<script[^>]+application/ld\+json[^>]*>(.*?)</script>", re.I | re.S)
+P_RE = re.compile(r"<p[\s>].*?</p\s*>", re.I | re.S)
 STOP = {"the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are", "at", "as", "by",
         "with", "from", "after", "over", "says", "say", "new", "his", "her", "its", "be", "was"}
 
@@ -33,6 +37,21 @@ STOP = {"the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are
 def clean_text(raw):
     text = html.unescape(TAG_RE.sub(" ", raw or ""))
     return WS_RE.sub(" ", text).strip()
+
+
+def html_paragraphs(raw):
+    """Split an HTML fragment into clean paragraphs."""
+    paras = [clean_text(part) for part in PARA_SPLIT_RE.split(raw or "")]
+    return [p for p in paras if len(p) > 1]
+
+
+def _feed_body(entry):
+    """Some feeds (Axios, WordPress sites) carry the whole article. Use it when they do."""
+    for content in entry.get("content") or []:
+        paras = html_paragraphs(content.get("value", ""))
+        if sum(len(p) for p in paras) >= MIN_TEXT:
+            return paras
+    return []
 
 
 def shorten(text, words=55):
@@ -105,8 +124,11 @@ def fetch_feed(feed, cfg, since):
             hay = (title + " " + summary).lower()
             if not any(word in hay for word in match):
                 continue
+        body = [] if feed["kind"] == "gnews" else _feed_body(entry)
+        if body and not summary:
+            summary = " ".join(body[:3])
         items.append({
-            "section": feed["section"], "source": source, "title": title, "link": link,
+            "section": feed["section"], "source": source, "title": title, "link": link, "paragraphs": body,
             "gnews": feed["kind"] == "gnews", "summary": shorten(summary),
             "published": published.isoformat() if published else None,
             "image": None if feed["kind"] == "gnews" else _image(entry),
@@ -204,6 +226,29 @@ def extract_paragraphs(doc, url):
         text = trafilatura.extract(doc, include_comments=False, include_tables=False, url=url, **mode)
         if text and len(text) >= MIN_TEXT:
             return [p.strip() for p in text.split("\n") if len(p.strip()) > 1]
+    # Many news sites put the whole story in their structured data.
+    for block in LDJSON_RE.findall(doc):
+        try:
+            data = json.loads(block.strip())
+        except ValueError:
+            continue
+        stack = [data]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, list):
+                stack.extend(node)
+            elif isinstance(node, dict):
+                body = node.get("articleBody")
+                if isinstance(body, str) and len(body) >= MIN_TEXT:
+                    paras = html_paragraphs(body) if "<" in body else [
+                        p.strip() for p in re.split(r"\n+", body) if p.strip()]
+                    return paras
+                stack.extend(v for v in node.values() if isinstance(v, (dict, list)))
+    # Last resort: the page's own paragraphs, keeping only sentence-length ones.
+    paras = [clean_text(p) for p in P_RE.findall(doc)]
+    paras = [p for p in paras if len(p) >= 80]
+    if sum(len(p) for p in paras) >= MIN_TEXT * 2:
+        return paras
     return []
 
 
@@ -231,6 +276,8 @@ def add_full_text(chosen, cfg):
     errors = []
 
     def work(story):
+        if story.get("paragraphs"):
+            return  # the feed already carried the whole article
         if "news.google.com" in story["link"]:
             return
         if SKIP_LINK_RE.search(story["link"]):
